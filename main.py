@@ -33,7 +33,9 @@ def add_movie():
 @app.route("/recommendations", methods=["GET"])
 def get_recommendations():
     # Например, сортировка по убыванию популярности, берем топ 5
-    ...
+    sorted_movies = sorted(movies, key=lambda movie: movie.popularity, reverse=True)
+    top_movies = sorted_movies[:5]
+    return jsonify([movie.to_dict() for movie in top_movies])
 
 
 # POST /recommendations/genre — составляет список фильмов указанного жанра
