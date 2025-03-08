@@ -28,5 +28,36 @@ class TestRecommendations(unittest.TestCase):
         self.assertEqual(data[4]["title"], "Titanic")
 
 
+class TestRecommendationsGenre(unittest.TestCase):
+    def setUp(self):
+        self.app = app.test_client()
+        self.app.testing = True
+
+        movies.clear()
+        movies.append(Movie(title="Inception", genre="Sci-Fi", popularity=95))
+        movies.append(Movie(title="The Dark Knight", genre="Action", popularity=98))
+        movies.append(Movie(title="Interstellar", genre="Sci-Fi", popularity=97))
+        movies.append(Movie(title="The Matrix", genre="Sci-Fi", popularity=96))
+        movies.append(Movie(title="Titanic", genre="Drama", popularity=94))
+        movies.append(Movie(title="Venom", genre="Action", popularity=93))
+
+    def test_get_recommendations_genre(self):
+        response = self.app.post("/recommendations/genre", json={"genre": "Sci-Fi"})
+        data = response.get_json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data), 3)
+        self.assertEqual(data[0]["title"], "Inception")
+        self.assertEqual(data[1]["title"], "Interstellar")
+        self.assertEqual(data[2]["title"], "The Matrix")
+
+    def test_get_recommendations_genre_not_found(self):
+        response = self.app.post("/recommendations/genre", json={"genre": "Fantasy"})
+        data = response.get_json()
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(data["error"], "No movies found in this genre")
+
+
 if __name__ == "__main__":
     unittest.main()
