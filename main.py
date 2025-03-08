@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-from user import User
 from movie import Movie
 
 app = Flask(__name__)
@@ -40,7 +39,16 @@ def get_recommendations():
 
 # POST /recommendations/genre — составляет список фильмов указанного жанра
 @app.route("/recommendations/genre", methods=["POST"])
-def recommendations_by_genre(): ...
+def recommendations_by_genre():
+    data = request.get_json()
+    genre = data.get("genre")
+    if genre is None:
+        return jsonify({"error": "Genre not provided"}), 400
+
+    filtered_movies = [movie for movie in movies if movie.genre == genre]
+    if not filtered_movies:
+        return jsonify({"error": "No movies found in this genre"}), 404
+    return jsonify([movie.to_dict() for movie in filtered_movies])
 
 
 # POST /recommendations/favorite — подбирает фильмы на основе предпочтений пользователя
