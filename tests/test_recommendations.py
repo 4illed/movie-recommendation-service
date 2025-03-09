@@ -1,5 +1,5 @@
 import unittest
-from main import app, movies, Movie
+from main import app, movies, users, Movie
 from user import User
 
 
