@@ -60,15 +60,35 @@ def recommendations_by_favorite():
         return jsonify({"error": "User ID not provided"}), 400
 
     # Поиск пользователя по user_id
+    user = None
+    for u in users:
+        if u.id == user_id:
+            user = u
+            break
+
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
 
     # Подбор фильмов по предпочтительному жанру пользователя
 
-    ...
+    favorite_genre = user.favorite_genre
+
+    recommended_movies = [movie for movie in movies if movie.genre == favorite_genre]
+
+    if not recommended_movies:
+        return jsonify({"error": "No movies found for your favorite genre"}), 404
+
+    return jsonify([movie.to_dict() for movie in recommended_movies])
 
 
 # GET /movies/<title> — ищет информацию о фильме по названию
 @app.route("/movies/<string:title>", methods=["GET"])
-def get_movie_by_title(title): ...
+def get_movie_by_title(title):
+    for movie in movies:
+        if movie.title == title:
+            return jsonify(movie.to_dict())
+
+    return jsonify({"error": "Movie not found"}), 404
 
 
 if __name__ == "__main__":
