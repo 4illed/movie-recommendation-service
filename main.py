@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-from user import User
 from movie import Movie
 
 app = Flask(__name__)
@@ -40,7 +39,16 @@ def get_recommendations():
 
 # POST /recommendations/genre — составляет список фильмов указанного жанра
 @app.route("/recommendations/genre", methods=["POST"])
-def recommendations_by_genre(): ...
+def recommendations_by_genre():
+    data = request.get_json()
+    genre = data.get("genre")
+    if genre is None:
+        return jsonify({"error": "Genre not provided"}), 400
+
+    filtered_movies = [movie for movie in movies if movie.genre == genre]
+    if not filtered_movies:
+        return jsonify({"error": "No movies found in this genre"}), 404
+    return jsonify([movie.to_dict() for movie in filtered_movies])
 
 
 # POST /recommendations/favorite — подбирает фильмы на основе предпочтений пользователя
@@ -52,15 +60,35 @@ def recommendations_by_favorite():
         return jsonify({"error": "User ID not provided"}), 400
 
     # Поиск пользователя по user_id
+    user = None
+    for u in users:
+        if u.id == user_id:
+            user = u
+            break
+
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
 
     # Подбор фильмов по предпочтительному жанру пользователя
 
-    ...
+    favorite_genre = user.favorite_genre
+
+    recommended_movies = [movie for movie in movies if movie.genre == favorite_genre]
+
+    if not recommended_movies:
+        return jsonify({"error": "No movies found for your favorite genre"}), 404
+
+    return jsonify([movie.to_dict() for movie in recommended_movies])
 
 
 # GET /movies/<title> — ищет информацию о фильме по названию
 @app.route("/movies/<string:title>", methods=["GET"])
-def get_movie_by_title(title): ...
+def get_movie_by_title(title):
+    for movie in movies:
+        if movie.title == title:
+            return jsonify(movie.to_dict())
+
+    return jsonify({"error": "Movie not found"}), 404
 
 
 if __name__ == "__main__":
